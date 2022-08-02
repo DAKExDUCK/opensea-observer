@@ -21,8 +21,8 @@ async def get(message: types.Message):
             values = get_info(arg)
             if values:
                 name, payment_token, floor_price, floor_price_usd = values
-                text = f"[{name}](https://opensea.io/collection/{name})\n\nFloor price: {clear_MD(floor_price)} {payment_token} / {clear_MD(floor_price_usd)} $"
-                await message.answer(text, parse_mode='MarkdownV2', reply_markup=add_delete_button(sub_on_collection(name)))
+                text = f"[{name}](https://opensea.io/collection/{arg})\n\nFloor price: {clear_MD(floor_price)} {payment_token} / {clear_MD(floor_price_usd)} $"
+                await message.answer(text, parse_mode='MarkdownV2', reply_markup=add_delete_button(sub_on_collection(arg)))
 
 
 async def sub_on_colllection(query: types.CallbackQuery):

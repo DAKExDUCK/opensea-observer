@@ -25,7 +25,7 @@ def notifier():
                     list_of_collections.append(collection)
 
     for collection in list_of_collections:
-        values = get_info(str(collection).lower())
+        values = get_info(collection)
         if values:
             name, payment_token, floor_price, floor_price_usd = values
             user_arr = list(filter(lambda x: name in x["collections"], users))
