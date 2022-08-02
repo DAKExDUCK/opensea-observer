@@ -7,7 +7,7 @@ from aiogram.utils import exceptions
 from bot.functions.functions import clear_MD
 from bot.functions.rights import is_Admin, is_admin
 from bot.handlers.logger import logger
-from bot.keyboards.default import add_delete_button, sub_on_collection
+from bot.keyboards.default import add_delete_button, sub_on_collection, unsub_on_collection
 from opensea_observer.parser import get_info
 
 
@@ -22,7 +22,19 @@ async def get(message: types.Message):
             if values:
                 name, payment_token, floor_price, floor_price_usd = values
                 text = f"[{name}](https://opensea.io/collection/{arg})\n\nFloor price: {clear_MD(floor_price)} {payment_token} / {clear_MD(floor_price_usd)} $"
-                await message.answer(text, parse_mode='MarkdownV2', reply_markup=add_delete_button(sub_on_collection(arg)))
+                with open('users.json') as file:
+                    data = json.load(file)
+                    users = data.get('users', [])
+                    user_arr = list(filter(lambda x: x["chat_id"]==message.from_user.id, users))
+                    if user_arr == []:
+                        kb = add_delete_button(sub_on_collection(arg))
+                    else:
+                        user = user_arr[0]
+                        if arg in user['collections']:
+                            kb = add_delete_button(unsub_on_collection(arg))
+                        else:
+                            kb = add_delete_button(sub_on_collection(arg))
+                await message.answer(text, parse_mode='MarkdownV2', reply_markup=kb)
 
 
 async def sub_on_colllection(query: types.CallbackQuery):
@@ -45,6 +57,23 @@ async def sub_on_colllection(query: types.CallbackQuery):
                     user['collections'].append(collection_name)
         with open('users.json', 'w') as file:
             json.dump(data, file)
+        await query.answer('Done! Bot will receive info about this collection every 30min')
+    except Exception as exc:
+        logger.error(exc)
+        await query.answer("Error")
+
+
+async def unsub_on_colllection(query: types.CallbackQuery):
+    collection_name = query.data.split()[-1]
+    try:
+        with open('users.json') as file:
+            data = json.load(file)
+            users = data.get('users', [])
+            user = list(filter(lambda x: x["chat_id"]==query.from_user.id, users))[0]
+            if collection_name in user['collections']:
+                del user['collections'][user['collections'].index(collection_name)]
+        with open('users.json', 'w') as file:
+            json.dump(data, file)
         await query.answer('Done!')
     except Exception as exc:
         logger.error(exc)
@@ -56,6 +85,12 @@ def register_handlers_opensea(dp: Dispatcher):
 
     dp.register_callback_query_handler(
         sub_on_colllection,
-        lambda c: 'sub' in c.data,
+        lambda c: 'sub' == c.data.split()[0],
+        state="*"
+    )
+
+    dp.register_callback_query_handler(
+        unsub_on_colllection,
+        lambda c: 'unsub' == c.data.split()[0],
         state="*"
     )

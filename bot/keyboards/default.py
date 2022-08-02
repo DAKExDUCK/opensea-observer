@@ -18,3 +18,12 @@ def sub_on_collection(name, kb: types.inline_keyboard = None):
     kb.add(del_btn)
 
     return kb
+
+
+def unsub_on_collection(name, kb: types.inline_keyboard = None):
+    if kb is None:
+        kb = InlineKeyboardMarkup()
+    del_btn = InlineKeyboardButton('Unsub', callback_data=f'unsub {name}')
+    kb.add(del_btn)
+
+    return kb

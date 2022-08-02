@@ -31,11 +31,13 @@ def notifier():
             user_arr = list(filter(lambda x: name in x["collections"], users))
             if len(user_arr) != 0:
                 for user in user_arr:
-                    text = f"[{name}](https://opensea.io/collection/{name})\n\nFloor price: {clear_MD(floor_price)} {payment_token} / {clear_MD(floor_price_usd)} $"
+                    text = f"[{name}](https://opensea.io/collection/{collection})\n\nFloor price: {clear_MD(floor_price)} {payment_token} / {clear_MD(floor_price_usd)} $"
                     try:
                         markup = types.InlineKeyboardMarkup()
-                        switch_button = types.InlineKeyboardButton(text='Delete', callback_data='delete')
-                        markup.add(switch_button)
+                        unsub_button = types.InlineKeyboardButton(text='Unsub', callback_data=f'unsub {collection}')
+                        del_button = types.InlineKeyboardButton(text='Delete', callback_data='delete')
+                        markup.add(unsub_button)
+                        markup.add(del_button)
                         bot.send_message(user['chat_id'], text, reply_markup=markup)
                     except Exception as exc:
                         ...
@@ -43,7 +45,7 @@ def notifier():
 
 
 def main():
-    sleep(60)
+    # sleep(2 * 60)
     try:
         while 1:
             notifier()
