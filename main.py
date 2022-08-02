@@ -45,5 +45,5 @@ async def main():
 if __name__ == '__main__':
     from opensea_observer.main import main as main_opensea
 
-    Thread(target=main_opensea, args=(), daemon=True).start()
+    Thread(target=main_opensea, args=(), daemon=False).start()
     asyncio.run(main())

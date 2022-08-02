@@ -30,7 +30,7 @@ async def get(message: types.Message):
                         kb = add_delete_button(sub_on_collection(arg))
                     else:
                         user = user_arr[0]
-                        if arg in user['collections']:
+                        if list(filter(lambda x: x["name"]==arg, user['collections'])) != []:
                             kb = add_delete_button(unsub_on_collection(arg))
                         else:
                             kb = add_delete_button(sub_on_collection(arg))
@@ -48,13 +48,13 @@ async def sub_on_colllection(query: types.CallbackQuery):
                 new_user = {
                     "chat_id": query.from_user.id,
                     "full_name": query.from_user.full_name,
-                    "collections": [collection_name]
+                    "collections": [{"name":collection_name}]
                     }
                 users.append(new_user)
             else:
                 user = user_arr[0]
                 if collection_name not in user['collections']:
-                    user['collections'].append(collection_name)
+                    user['collections'].append({"name":collection_name})
         with open('users.json', 'w') as file:
             json.dump(data, file)
         await query.answer('Done! Bot will receive info about this collection every 30min')
@@ -68,10 +68,12 @@ async def unsub_on_colllection(query: types.CallbackQuery):
     try:
         with open('users.json') as file:
             data = json.load(file)
-            users = data.get('users', [])
+            users = data.get('users')
             user = list(filter(lambda x: x["chat_id"]==query.from_user.id, users))[0]
-            if collection_name in user['collections']:
-                del user['collections'][user['collections'].index(collection_name)]
+            if list(filter(lambda x: x["name"]==collection_name, user['collections'])) is not []:
+                del user['collections'][user['collections'].index(
+                    list(filter(lambda x: x["name"]==collection_name, user['collections']))[0]
+                    )]
         with open('users.json', 'w') as file:
             json.dump(data, file)
         await query.answer('Done!')
