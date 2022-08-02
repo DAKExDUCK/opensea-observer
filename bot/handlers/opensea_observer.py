@@ -15,13 +15,12 @@ async def get(message: types.Message):
     try:
         arguments = message.get_args().split()
     except exceptions.MessageTextIsEmpty:
-        message.reply("Please add name of collection.\n\n '''/get cryptopunks subwayrats'''", parse_mode='MarkdownV2')
+        await message.reply("Please add name of collection.\n\n '''/get cryptopunks subwayrats'''", parse_mode='MarkdownV2')
     else:
         for arg in arguments:
             values = get_info(arg)
             if values:
                 name, payment_token, floor_price, floor_price_usd = values
-                text = f"[{name}](https://opensea.io/collection/{arg})\n\nFloor price: {clear_MD(floor_price)} {payment_token} / {clear_MD(floor_price_usd)} $"
                 with open('users.json') as file:
                     data = json.load(file)
                     users = data.get('users', [])
@@ -30,10 +29,23 @@ async def get(message: types.Message):
                         kb = add_delete_button(sub_on_collection(arg))
                     else:
                         user = user_arr[0]
-                        if list(filter(lambda x: x["name"]==arg, user['collections'])) != []:
+                        collection = list(filter(lambda x: x["name"]==arg, user['collections']))
+                        if collection != []:
                             kb = add_delete_button(unsub_on_collection(arg))
                         else:
                             kb = add_delete_button(sub_on_collection(arg))
+                if user_arr != [] and collection != []:
+                    if 'last_floor_price_usd' in collection[0]:
+                        difference = 100 - 100 * collection[0]['last_floor_price_usd']/floor_price_usd
+                        text = (f"[{name}](https://opensea.io/collection/{arg})\n\n"
+                        f"Floor price: {clear_MD(floor_price)} {payment_token}"
+                        f" / {clear_MD(round(floor_price_usd, 2))} $"
+                        f" / {clear_MD(round(difference, 2))}%")
+                    else:
+                        text = f"[{name}](https://opensea.io/collection/{arg})\n\nFloor price: {clear_MD(floor_price)} {payment_token} / {clear_MD(round(floor_price_usd, 2))} $"
+                else:
+                    text = f"[{name}](https://opensea.io/collection/{arg})\n\nFloor price: {clear_MD(floor_price)} {payment_token} / {clear_MD(round(floor_price_usd, 2))} $"
+
                 await message.answer(text, parse_mode='MarkdownV2', reply_markup=kb)
 
 

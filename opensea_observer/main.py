@@ -3,10 +3,10 @@ import os
 from time import sleep
 import traceback
 import telebot
-from telebot import types
 import dotenv
 
 from bot.functions.functions import clear_MD
+from opensea_observer.functions import get_buttons
 from .parser import get_info
 
 dotenv.load_dotenv()
@@ -31,20 +31,30 @@ def notifier():
             user_arr = list(filter(lambda x: collection in x["collections"], users))
             if len(user_arr) != 0:
                 for user in user_arr:
-                    text = f"[{name}](https://opensea.io/collection/{collection['name']})\n\nFloor price: {clear_MD(floor_price)} {payment_token} / {clear_MD(floor_price_usd)} $"
-                    try:
-                        markup = types.InlineKeyboardMarkup()
-                        unsub_button = types.InlineKeyboardButton(text='Unsub', callback_data=f"unsub {collection['name']}")
-                        del_button = types.InlineKeyboardButton(text='Delete', callback_data='delete')
-                        markup.add(unsub_button)
-                        markup.add(del_button)
-                        bot.send_message(user['chat_id'], text, reply_markup=markup)
+                    if 'last_floor_price_usd' in collection:
+                        difference = 100 - 100 * collection['last_floor_price_usd']/floor_price_usd
+                        if difference < 5 or difference > 5:
+                            user['collections'][user['collections'].index(
+                                    list(filter(lambda x: x["name"]==collection['name'], user['collections']))[0])
+                                    ]['last_floor_price_usd'] = floor_price_usd
+                    else:
                         user['collections'][user['collections'].index(
-                            list(filter(lambda x: x["name"]==collection['name'], user['collections']))[0])
-                            ]['last_floor_price_usd'] = floor_price_usd
-                        
+                                    list(filter(lambda x: x["name"]==collection['name'], user['collections']))[0])
+                                    ]['last_floor_price_usd'] = floor_price_usd
+                            
                         with open('users.json', 'w') as file:
                             json.dump(data, file)
+                    if 'last_floor_price_usd' in collection:
+                        text = (f"[{name}](https://opensea.io/collection/{collection['name']})\n\n"
+                                f"Floor price: {clear_MD(floor_price)} {payment_token}"
+                                f" / {clear_MD(round(floor_price_usd, 2))} $"
+                                f" / {clear_MD(round(difference, 2))}%")
+                    else:
+                        text = f"[{name}](https://opensea.io/collection/{collection['name']})\n\nFloor price: {clear_MD(floor_price)} {payment_token} / {clear_MD(round(floor_price_usd, 2))} $"
+
+                    try:
+                        markup = get_buttons(collection)
+                        bot.send_message(user['chat_id'], text, reply_markup=markup)
                     except Exception:
                         ...
                         print(traceback.format_exc())
