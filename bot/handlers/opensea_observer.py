@@ -36,11 +36,16 @@ async def get(message: types.Message):
                             kb = add_delete_button(sub_on_collection(arg))
                 if user_arr != [] and collection != []:
                     if 'last_floor_price_usd' in collection[0]:
-                        difference = 100 - 100 * collection[0]['last_floor_price_usd']/floor_price_usd
+                        if collection[0]['last_floor_price_usd'] > floor_price_usd:
+                            difference = round(((collection[0]['last_floor_price_usd'] - floor_price_usd)/collection[0]['last_floor_price_usd'] * 100), 2)
+                        else:
+                            difference = round(((floor_price_usd - collection[0]['last_floor_price_usd'])/collection[0]['last_floor_price_usd'] * 100), 2)
+                        if difference > 0:
+                            difference_str = f"\+{str(difference)}"
                         text = (f"[{name}](https://opensea.io/collection/{arg})\n\n"
                         f"Floor price: {clear_MD(floor_price)} {payment_token}"
                         f" / {clear_MD(round(floor_price_usd, 2))} $"
-                        f" / {clear_MD(round(difference, 2))}%")
+                        f" / {clear_MD(difference_str)}%")
                     else:
                         text = f"[{name}](https://opensea.io/collection/{arg})\n\nFloor price: {clear_MD(floor_price)} {payment_token} / {clear_MD(round(floor_price_usd, 2))} $"
                 else:
