@@ -11,7 +11,7 @@ from bot.functions.rights import admin_list
 @print_msg
 async def start(message: types.Message, state: FSMContext):
     text = "Start message"
-    await message.reply(text, reply_markup=add_delete_button(None))
+    await message.reply(text, reply_markup=add_delete_button())
 
 
 @print_msg

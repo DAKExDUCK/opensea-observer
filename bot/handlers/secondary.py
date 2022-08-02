@@ -20,7 +20,7 @@ async def last_handler(message: types.Message):
         if message.is_forward():
             text = get_info_from_forwarded_msg(message)
             if len(text) > 0:
-                await message.reply(text, parse_mode='MarkdownV2', reply_markup=add_delete_button(None))
+                await message.reply(text, parse_mode='MarkdownV2', reply_markup=add_delete_button())
         
         elif message.reply_to_message:
             if 'User id' in message.reply_to_message.text:
@@ -38,7 +38,7 @@ async def last_handler(message: types.Message):
                                                parse_mode='MarkdownV2')
                 await message.reply_to_message.edit_text(message.reply_to_message.md_text+'\n\n*Answered*', parse_mode='MarkdownV2')
             except aiogram.exceptions.BotBlocked:
-                await message.reply('Bot blocked by user', reply_markup=add_delete_button(None))
+                await message.reply('Bot blocked by user', reply_markup=add_delete_button())
     
     else:
         if message.reply_to_message:

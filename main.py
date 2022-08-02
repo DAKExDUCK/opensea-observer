@@ -1,5 +1,6 @@
 import asyncio
 import os
+from threading import Thread
 
 from aiogram import Bot
 from aiogram.types import BotCommand
@@ -8,6 +9,7 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 import dotenv
 
 from bot.handlers.default import register_handlers_default
+from bot.handlers.opensea_observer import register_handlers_opensea
 from bot.handlers.secondary import register_handlers_secondary
 from bot.handlers.logger import logger
 
@@ -32,6 +34,7 @@ async def main():
     dp = Dispatcher(bot, storage=MemoryStorage())
 
     register_handlers_default(dp)
+    register_handlers_opensea(dp)
     register_handlers_secondary(dp)
 
     await set_commands(bot)
@@ -40,4 +43,7 @@ async def main():
 
 
 if __name__ == '__main__':
+    from opensea_observer.main import main as main_opensea
+
+    Thread(target=main_opensea, args=(), daemon=True).start()
     asyncio.run(main())
